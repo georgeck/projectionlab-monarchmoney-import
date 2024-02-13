@@ -1,4 +1,4 @@
-const projection_Labs_api_key = "API_KEY_GOES_HERE";
+const projection_Labs_api_key = "YOUR_PL_API_KEY";
 
 const monarchCredentials = {
     email: "MONARCH_EMAIL_GOES_HERE",
