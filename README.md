@@ -1,8 +1,10 @@
-## Introduction
-Here are some scripts to help you import data from [Monarch Money](https://monarchmoney.com) into [ProjectionLab](https://projectionlab.com/).
-### How does this work?
-The following steps makes it easy to call the ProjectionLab's `updateAccount()` [Plugin API](https://app.projectionlab.com/docs/module-PluginAPI.html#.updateAccount) to 
-update your account balances with the latest values from Monarch Money. 
+## Import your Monarch Money account data into ProjectionLab
+Updates your [ProjectionLab](https://projectionlab.com/) account balances with the latest data from [Monarch Money](https://monarchmoney.com).
+
+### How it Works
+1. **Connects to APIs**: Scripts communicate with both Monarch Money and ProjectionLab's Plugin API.
+2. **Fetches Monarch Data**: Your Monarch Money account balances are directly downloaded to your machine.
+3. **Updates ProjectionLab**: The project updates your ProjectionLab account information using the `updateAccount()` [Plugin API](https://app.projectionlab.com/docs/module-PluginAPI.html#.updateAccount).
 
 Here is how the API looks like:
 ```javascript
@@ -13,28 +15,36 @@ If you have 10 accounts, you have to call this API 10 times, with the correct `a
 you should call this API from the browser's developer console. 
 
 See the image below:
+
 ![Browser Developer Console](images/developer-console.png)
 
-When you run the script (in step 4 below), it generates a string that you can copy and paste into the browser's developer console. Your account data is downloaded directly from Monarch Money 
+When you run the script (in step 5 below), it generates a string that you can copy and paste into the browser's developer console. Your account data is downloaded directly from Monarch Money 
 to your local machine and then the script will update the account balances in ProjectionLab.
 
-### Step 0: Backup your current data in ProjectionLab
+### Getting Started
+
+#### Prerequisites:
+- Your Monarch Money account credentials
+- Basic familiarity with your browser's developer console
+
+### Step-by-Step Guide
+#### Step 0: Backup your current data in ProjectionLab
 Since this will modify ProjectionLab's application data, it's better to do a backup (Account Settings > Export Data), so you have something to restore from if needed.
 
-### Step 1: Set up ProjectionLab to use the plugin API
+#### Step 1: Set up ProjectionLab to use the plugin API
 1. Login to [ProjectionLab](https://projectionlab.com) and go to Account Settings on the top right.
 2. Open Plugins page -> (Account Settings > Plugins)
 3. Enable the switch '**Enable Plugins**'.
 4. Copy the value in the text box '**Plugin API Key**'. (From now on, this key will be referred to as `YOUR_PL_API_KEY`.)
 
-### Step 2: Get the `accountId` of ProjectionLab accounts that you want to import
-ℹ️ **You need to do this step only once** ℹ️
+#### Step 2: Get the `accountId` of ProjectionLab accounts that you want to import
+ℹ️ You need to do this step only once ℹ️
 
 The goal of this step is to get the `accountId` of the accounts in ProjectionLab that you want to update. To help you do that, this step lists all accounts in ProjectionLab with their `accountId` and `name`.
 
 1. Open the Developer Console of your browser and run the following script that gives you the `id` and `name` of the accounts. 
 
-‼️ **Remember to replace `YOUR_PL_API_KEY` with the key that you copied in step 1.4 above** ‼️ 
+‼️Remember to replace `YOUR_PL_API_KEY` with the key that you copied in step 1.4 above ‼️ 
 ```javascript
 const exportData = await window.projectionlabPluginAPI.exportData({ key: 'YOUR_PL_API_KEY' });
 
@@ -46,11 +56,10 @@ plAccounts.forEach(account => {
     console.log(account.id, account.name)
 });
 ```
-
 2. The browser console will display the id and name of your accounts in ProjectionLab.
 3. Copy the list of `account.id` and `account.name` of those accounts.
 
-### Step 2: Get the corresponding `accountId` from Monarch Money
+#### Step 3: Get the corresponding `accountId` from Monarch Money
 ℹ️ **You need to do this step only once** ℹ️ 
 1. Open the file 'config.js' and replace `monarch_email` and `monarch_password` with your Monarch credentials.
 2. Open terminal and install the node packages by running `npm install`.
@@ -58,17 +67,18 @@ plAccounts.forEach(account => {
 4. The terminal will display the list of Monarch accounts with their `id` and `name`. 
 5. Copy the list of the `id`s of the accounts you want to import.
 
-### Step 3: Update the mapping of Monarch ID and ProjectionLabs accountId `config.js` file
+#### Step 4: Update the mapping of Monarch ID and ProjectionLabs accountId `config.js` file
 ℹ️️ **You need to do this step only once** ℹ️️ 
 1. Open the file 'config.js'
 2. Replace `YOUR_PL_API_KEY` with the key that you copied in step 1.4 above.
 3. Update the `accountMapping` array with the corresponding `id`s of Monarch accounts and ProjectLab accounts - Monarch id in `monarchAccountID` and ProjectionLabs id in `plAccountID`.
 
-### Step 4: Get the script to import data into ProjectionLab
+#### Step 5: Get the script to import data into ProjectionLab
 1. Run `node index.js` to get the script that you can use in ProjectionLab.
 2. Copy the script from the terminal output
 3. Open browser's developer console of the ProjectionLab browser and paste the above script and hit Enter
 
-The accounts in the ProjectionLab will be updated with the new values. Congratulations! You did it!
+The accounts in the ProjectionLab will be updated with the new values. Congratulations! You did it! Each time you want to update the account balances in ProjectionLab, you only need to run step 5.
 
-Each time you want to update the account balances in ProjectionLab, you only need to run step 4.
+### Contributing
+Contributions are welcome!
