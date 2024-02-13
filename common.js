@@ -10,8 +10,8 @@ async function login() {
         },
         "referrerPolicy": "no-referrer",
         "body": JSON.stringify({
-            username: monarchCredentials.email,
-            password: monarchCredentials.password,
+            username: monarchCredentials.monarch_email,
+            password: monarchCredentials.monarch_password,
             trusted_device: false,
             supports_mfa: false
         }),

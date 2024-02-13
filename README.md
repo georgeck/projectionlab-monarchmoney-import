@@ -1,7 +1,6 @@
-# Introduction
+## Introduction
 Here are some scripts to help you import data from [Monarch Money](https://monarchmoney.com) into [ProjectionLab](https://projectionlab.com/).
-
-## How does this work?
+### How does this work?
 The following steps makes it easy to call the ProjectionLab's `updateAccount()` [Plugin API](https://app.projectionlab.com/docs/module-PluginAPI.html#.updateAccount) to 
 update your account balances with the latest values from Monarch Money. 
 
@@ -9,13 +8,14 @@ Here is how the API looks like:
 ```javascript
 window.projectionlabPluginAPI.updateAccount('12345', { balance: 1000 }, { key: 'YOUR_PL_API_KEY' })
 ```
-In the above example, `12345` is the `accountId` in ProjectionLab, `1000` is the new balance and `YOUR_PL_API_KEY` is the Plugin API key (see below on how to get the key).
+In the above example, `12345` is the `accountId` of your account in ProjectionLab, `1000` is the new balance and `YOUR_PL_API_KEY` is the Plugin API key (see below on how to get the key).
 If you have 10 accounts, you have to call this API 10 times, with the correct `accountId` and balance, to update of all the accounts. And since the API uses the `window` object, 
-you should call this API from the browser's developer console.
+you should call this API from the browser's developer console. 
 
+See the image below:
 ![Browser Developer Console](images/developer-console.png)
 
-When you run the script, it will generate a string that you can copy and paste into the browser's developer console. Your account data is downloaded from Monarch Money 
+When you run the script, it will generate a string that you can copy and paste into the browser's developer console. Your account data is downloaded directly from Monarch Money 
 to your local machine and then the script will update the account balances in ProjectionLab.
 
 ### Step 0: Backup your current data in ProjectionLab
@@ -23,7 +23,7 @@ Since this will modify application data, it's better to do a backup (Account Set
 
 ### Step 1: Set up ProjectionLab to use the plugin API
 1. Login to [ProjectionLab](https://projectionlab.com) and go to Account Settings on the top right.
-2. Open [Plugins page](https://app.projectionlab.com/settings/plugins)
+2. Open Plugins page -> (Account Settings > Plugins)
 3. Enable the switch '**Enable Plugins**'.
 4. Copy the value in the text box '**Plugin API Key**'. (From now on, this key will be referred to as `YOUR_PL_API_KEY`.)
 
@@ -36,11 +36,11 @@ const exportData = await window.projectionlabPluginAPI.exportData({ key: 'YOUR_P
 
 // Merge the list of savings accounts, investment accounts, assets and debts
 const plAccounts = [...exportData.today.savingsAccounts, ...exportData.today.investmentAccounts,
-                    ...exportData.today.assets, ...exportData.today.debts]
+                    ...exportData.today.assets, ...exportData.today.debts];
 
-plAccounts.map(account => {
+plAccounts.forEach(account => {
     console.log(account.id, account.name)
-})
+});
 ```
 
 2. The browser console will display the id and name of your accounts in ProjectionLab.
@@ -51,9 +51,8 @@ plAccounts.map(account => {
 1. Open the file 'config.js' and replace `monarch_email` and `monarch_password` with your Monarch credentials.
 2. Open terminal and install the node packages by running `npm install`.
 3. Run `node get-monarch-accounts.js` in the terminal.
-   
-1. The terminal will display the list of Monarch accounts with their `id` and `name`. 
-2. Copy the list of the `id`s of the accounts you want to import.
+4. The terminal will display the list of Monarch accounts with their `id` and `name`. 
+5. Copy the list of the `id`s of the accounts you want to import.
 
 ### Step 3: Update the mapping of Monarch ID and ProjectionLabs accountId `config.js` file
 ‼️ **You need to do this step only once** ‼️ 
@@ -67,3 +66,5 @@ plAccounts.map(account => {
 3. Open browser's developer console of the ProjectionLab browser and paste the above script and hit Enter
 
 The accounts in the ProjectionLab will be updated with the new values. Congratulations! You did it!
+
+Each time you want to update the account balances in ProjectionLab, you only need to run step 4.
