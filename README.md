@@ -15,7 +15,8 @@ you should call this API from the browser's developer console.
 
 ![Browser Developer Console](images/developer-console.png)
 
-
+When you run the script, it will generate a string that you can copy and paste into the browser's developer console. Your account data is downloaded from Monarch Money 
+to your local machine and then the script will update the account balances in ProjectionLab.
 
 ### Step 0: Backup your current data in ProjectionLab
 Since this will modify application data, it's better to do a backup (Account Settings > Export Data), so you have something to restore from if needed.
