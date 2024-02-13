@@ -2,7 +2,7 @@ import login from './common.js';
 import {gql, GraphQLClient} from "graphql-request";
 
 
-async function getAccounts() {
+async function getMonarchAccounts() {
     const token = await login();
 
     // Define the GraphQL endpoint
@@ -44,7 +44,7 @@ async function getAccounts() {
 }
 
 // Call the function
-getAccounts().then((data) => {
+getMonarchAccounts().then((data) => {
     for (const account of data.accounts) {
         console.log(account.id, account.displayName);
     }
