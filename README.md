@@ -62,6 +62,9 @@ plAccounts.forEach(account => {
 #### Step 3: Get the corresponding `accountId` from Monarch Money
 ℹ️ **You need to do this step only once** ℹ️ 
 1. Open the file 'config.js' and replace `monarch_email` and `monarch_password` with your Monarch credentials.
+   * If you have configured Multi-Factor Authentication, you will need to update `monarch_mfa` with the mfa code.
+   * Note - this is not the recovery code, but the 30+ character code that is shown right next to the QR code when you set up MFA.
+   * You might have to re-enable MFA if you don't have the code with you.
 2. Open terminal and install the node packages by running `npm install`.
 3. Run `node get-monarch-accounts.js` in the terminal.
 4. The terminal will display the list of Monarch accounts with their `id` and `name`. 

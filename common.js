@@ -1,4 +1,5 @@
 import {  monarchCredentials } from './config.js'
+import { authenticator } from 'otplib';
 
 async function login() {
     let response = await fetch("https://api.monarchmoney.com/auth/login/", {
@@ -13,7 +14,8 @@ async function login() {
             username: monarchCredentials.monarch_email,
             password: monarchCredentials.monarch_password,
             trusted_device: false,
-            supports_mfa: false
+            supports_mfa: !!monarchCredentials.monarch_mfa,
+            totp: monarchCredentials.monarch_mfa ? authenticator.generate(monarchCredentials.monarch_mfa) : null
         }),
         "method": "POST",
         "mode": "cors",
