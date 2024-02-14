@@ -2,7 +2,8 @@ const projection_Labs_api_key = "YOUR_PL_API_KEY";
 
 const monarchCredentials = {
     monarch_email: "MONARCH_EMAIL_GOES_HERE",
-    monarch_password: "MONARCH_PASSWORD_GOES_HERE"
+    monarch_password: "MONARCH_PASSWORD_GOES_HERE",
+    monarch_mfa: null
 };
 
 // Create an object array to store ProjectionLab account, monarchAccountID,and balance
