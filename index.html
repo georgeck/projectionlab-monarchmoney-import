@@ -50,20 +50,25 @@
     <script>
         async function showAccounts() {
 
-            const accounts = await fetchAccounts();
             const accountsTableBody = document.querySelector('#accounts-tbody');
-            let accountsHtml = '';
-            if (accounts == null) {
-                accountsHtml = `<tr><td>No accounts</td></tr>`;
+            try {
+                const accounts = await fetchAccounts();
+                let accountsHtml = '';
+                if (accounts == null) {
+                    accountsHtml = `<tr><td>No accounts</td></tr>`;
+                }
+                accounts.map(account => {
+                    accountsHtml += `<tr><td>${account.id}</td><td>${account.displayName}</td></tr>`
+                });
+                accountsTableBody.innerHTML = accountsHtml;
+            } catch (error) {
+                console.log(`showAccounts(): fetchAccounts threw error: ${error}`);
+                accountsTableBody.innerHTML = '<span style="color:red">Failed to fetch accounts. Check whether the user credentials are correct.</span>';
             }
-            accounts.map(account => {
-                accountsHtml += `<tr><td>${account.id}</td><td>${account.displayName}</td></tr>`
-            });
-            accountsTableBody.innerHTML = accountsHtml;
         }
 
         async function fetchAccounts() {
-            console.log('in getAccounts');
+            console.log('fetching Monarch accounts');
             const response = await fetch('/api/get-monarch-accounts', {
                 "method": "POST",
                 "headers": {
@@ -75,6 +80,10 @@
                 const accounts = await response.json();
                 console.log(accounts);
                 return accounts;
+            } else {
+                const errorDetail = await response.json();
+                const error = new Error(`API /api/get-monarch-accounts failed with server error: status=${response.status} ${response.statusText}. JSON=${JSON.stringify(errorDetail)}`);
+                throw error;
             }
         }
     </script>
