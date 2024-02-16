@@ -1,14 +1,19 @@
 import express from 'express';
 import getMonarchAccounts from './get-monarch-accounts.js';
 
+import path from 'path';
+import { URL } from 'url';
+
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+    // res.send('Hello World!');
+    const currentDir = new URL('.', import.meta.url).pathname;
+    res.sendFile(path.join(currentDir, '/index.html'));
 });
 
-app.get('/api/get-monarch-accounts', async (req, res) => {
+app.post('/api/get-monarch-accounts', async (req, res) => {
 
     const accounts = await getMonarchAccounts();
     console.log(accounts);
