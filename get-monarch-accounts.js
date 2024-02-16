@@ -1,7 +1,7 @@
 import login from './common.js';
-import {gql, GraphQLClient} from "graphql-request";
+import { gql, GraphQLClient } from "graphql-request";
 
-
+// API endpoint - /api/get-monarch-accounts
 async function getMonarchAccounts() {
     const token = await login();
 
@@ -36,16 +36,23 @@ async function getMonarchAccounts() {
     // Execute the query
     try {
         const data = await client.request(query);
-        return data;
+        return data.accounts;
     } catch (error) {
         console.error(error);
         return null; // or handle the error as needed
     }
 }
 
-// Call the function
-getMonarchAccounts().then((data) => {
-    for (const account of data.accounts) {
-        console.log(account.id, account.displayName);
-    }
-});
+// Call the function as a script
+console.log(`command line args: length=${process.argv.length}. arg[2]=${process.argv[2]}`);
+if (process.argv.length > 2 && process.argv[2] == 'script') {
+    console.log(`Running getMonarchAccounts as script`);
+
+    getMonarchAccounts().then((accounts) => {
+        for (const account of accounts) {
+            console.log(account.id, account.displayName);
+        }
+    });
+}
+
+export default getMonarchAccounts;
