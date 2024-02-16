@@ -6,12 +6,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "getMonarchAccounts": "node get-monarch-accounts.js"
+    "start": "node app.js",
+    "getMonarchAccounts": "node get-monarch-accounts.js script"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.18.2",
     "graphql-request": "^6.1.0",
     "otplib": "^12.0.1"
   }
