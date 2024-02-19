@@ -1,7 +1,8 @@
 import login from './common.js';
-import { gql, GraphQLClient } from "graphql-request";
+import {gql, GraphQLClient} from "graphql-request";
 
-// API endpoint - /api/get-monarch-accounts
+const endpoint = 'https://api.monarchmoney.com/graphql';
+
 async function getMonarchAccounts() {
 
     let token = null;
@@ -10,9 +11,6 @@ async function getMonarchAccounts() {
     } catch (error) {
         throw error;
     }
-
-    // Define the GraphQL endpoint
-    const endpoint = 'https://api.monarchmoney.com/graphql';
 
     // Create a GraphQLClient instance
     const client = new GraphQLClient(endpoint, {
@@ -51,7 +49,7 @@ async function getMonarchAccounts() {
 
 // Call the function as a script
 console.log(`command line args: length=${process.argv.length}. arg[2]=${process.argv[2]}`);
-if (process.argv.length > 2 && process.argv[2] == 'script') {
+if (process.argv.length > 2 && process.argv[2] === 'script') {
     console.log(`Running getMonarchAccounts as script`);
 
     try {
