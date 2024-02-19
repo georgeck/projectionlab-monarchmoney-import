@@ -1,4 +1,4 @@
-import {  monarchCredentials } from './config.js'
+import { monarchCredentials } from './config.js'
 import { authenticator } from 'otplib';
 
 async function login() {
@@ -21,9 +21,14 @@ async function login() {
         "mode": "cors",
         "credentials": "omit"
     });
-    if(response.ok) {
+    if (response.ok) {
         let data = await response.json();
         return "Token " + data.token;
+    } else {
+        const data = await response.json();
+        const error = new Error(`Monarch login failed with server error: status=${response.status} ${response.statusText}. JSON=${JSON.stringify(data)}`);
+        console.error(error);
+        throw error;
     }
 }
 

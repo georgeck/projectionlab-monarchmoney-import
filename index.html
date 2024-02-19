@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Monarch ProjectionLab Connector</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+    <h3 class="text-center mb-16">Monarch ProjectionLab Connector</h3>
+
+    <div class="row mb-2 mt-4">
+        <h5>Monarch login</h5>
+    </div>
+
+    <div class="row">
+        <div class="col-2">
+            <label for="email">Your email</label>
+            <input id="username" class="h-100" type="text" value="" placeholder="abc@xyz.com" />
+        </div>
+        <div class="col-2">
+            <label for="password">Your password</label>
+            <input id="password" class="h-100" type="password" value="" placeholder="password" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mt-2">
+            <button class="btn btn-primary" onclick="showAccounts()">Get Accounts</button>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            Your Accounts
+            <table class="table-sm">
+                <thead>
+                    <tr>
+                        <th>Account ID</th>
+                        <th>Account Name</th>
+                    </tr>
+                </thead>
+                <tbody id="accounts-tbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function showAccounts() {
+
+            const accountsTableBody = document.querySelector('#accounts-tbody');
+            try {
+                const accounts = await fetchAccounts();
+                let accountsHtml = '';
+                if (accounts == null) {
+                    accountsHtml = `<tr><td>No accounts</td></tr>`;
+                }
+                accounts.map(account => {
+                    accountsHtml += `<tr><td>${account.id}</td><td>${account.displayName}</td></tr>`
+                });
+                accountsTableBody.innerHTML = accountsHtml;
+            } catch (error) {
+                console.log(`showAccounts(): fetchAccounts threw error: ${error}`);
+                accountsTableBody.innerHTML = '<span style="color:red">Failed to fetch accounts. Check whether the user credentials are correct.</span>';
+            }
+        }
+
+        async function fetchAccounts() {
+            console.log('fetching Monarch accounts');
+            const response = await fetch('/api/get-monarch-accounts', {
+                "method": "POST",
+                "headers": {
+                    "accept": "application/json",
+                    "content-type": "application/json",
+                },
+            });
+            if (response.ok) {
+                const accounts = await response.json();
+                console.log(accounts);
+                return accounts;
+            } else {
+                const errorDetail = await response.json();
+                const error = new Error(`API /api/get-monarch-accounts failed with server error: status=${response.status} ${response.statusText}. JSON=${JSON.stringify(errorDetail)}`);
+                throw error;
+            }
+        }
+    </script>
+
+</body>
+
+</html>
