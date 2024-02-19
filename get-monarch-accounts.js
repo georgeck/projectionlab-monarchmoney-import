@@ -47,19 +47,13 @@ async function getMonarchAccounts() {
     }
 }
 
-// Call the function as a script
-console.log(`command line args: length=${process.argv.length}. arg[2]=${process.argv[2]}`);
-if (process.argv.length > 2 && process.argv[2] === 'script') {
-    console.log(`Running getMonarchAccounts as script`);
-
-    try {
-        const accounts = await getMonarchAccounts()
-        for (const account of accounts) {
-            console.log(account.id, account.displayName);
-        }
-    } catch (error) {
-        console.error(error);
+try {
+    const accounts = await getMonarchAccounts()
+    for (const account of accounts) {
+        console.log(account.id, account.displayName);
     }
+} catch (error) {
+    console.error(error);
 }
 
 export default getMonarchAccounts;
