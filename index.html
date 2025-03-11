@@ -38,6 +38,34 @@
     <button type="submit" class="btn btn-primary">Get Accounts</button>
 </form>
 
+<div class="row mb-2 mt-5">
+    <h5>Update Configuration</h5>
+</div>
+
+<form id="configForm" onsubmit="event.preventDefault(); updateConfig();">
+    <div class="mb-3">
+        <label for="projectionLabsApiKey" class="form-label">ProjectionLabs API Key</label>
+        <input type="text" class="form-control" id="projectionLabsApiKey" placeholder="ProjectionLabs API Key">
+    </div>
+    <div class="mb-3">
+        <label for="monarchEmail" class="form-label">Monarch Email</label>
+        <input type="email" class="form-control" id="monarchEmail" placeholder="Monarch Email">
+    </div>
+    <div class="mb-3">
+        <label for="monarchPassword" class="form-label">Monarch Password</label>
+        <input type="password" class="form-control" id="monarchPassword" placeholder="Monarch Password">
+    </div>
+    <div class="mb-3">
+        <label for="monarchMfa" class="form-label">Monarch MFA Code (optional)</label>
+        <input type="text" class="form-control" id="monarchMfa" placeholder="MFA Secret">
+    </div>
+    <div class="mb-3">
+        <label for="deviceUuid" class="form-label">Device UUID</label>
+        <input type="text" class="form-control" id="deviceUuid" placeholder="Device UUID">
+    </div>
+    <button type="submit" class="btn btn-primary">Update Configuration</button>
+    <div id="configUpdateStatus" class="mt-2"></div>
+</form>
 
 <div class="row mt-4">
     <div class="col-12">
@@ -56,6 +84,66 @@
 </div>
 
 <script>
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const config = await fetchConfig();
+            document.getElementById('projectionLabsApiKey').value = config.projection_Labs_api_key || '';
+            document.getElementById('monarchEmail').value = config.monarchCredentials.monarch_email || '';
+            document.getElementById('monarchPassword').value = config.monarchCredentials.monarch_password || '';
+            document.getElementById('monarchMfa').value = config.monarchCredentials.monarch_mfa || '';
+            document.getElementById('deviceUuid').value = config.monarchCredentials.device_uuid || '';
+        } catch (error) {
+            console.error('Failed to load config:', error);
+        }
+    });
+
+    async function fetchConfig() {
+        const response = await fetch('/api/get-config');
+        if (response.ok) {
+            return await response.json();
+        } else {
+            throw new Error(`Failed to fetch config: ${response.status} ${response.statusText}`);
+        }
+    }
+
+    async function updateConfig() {
+        const configUpdateStatus = document.getElementById('configUpdateStatus');
+        configUpdateStatus.innerHTML = 'Updating config...';
+
+        const configData = {
+            projection_Labs_api_key: document.getElementById('projectionLabsApiKey').value,
+            monarchCredentials: {
+                monarch_email: document.getElementById('monarchEmail').value,
+                monarch_password: document.getElementById('monarchPassword').value,
+                monarch_mfa: document.getElementById('monarchMfa').value,
+                device_uuid: document.getElementById('deviceUuid').value
+            }
+        };
+
+        try {
+            const response = await fetch('/api/update-config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(configData)
+            });
+
+            if (response.ok) {
+                configUpdateStatus.innerHTML = '<span class="text-success">Configuration updated successfully!</span>';
+                setTimeout(() => {
+                    configUpdateStatus.innerHTML = '';
+                }, 3000);
+            } else {
+                const error = await response.json();
+                configUpdateStatus.innerHTML = `<span class="text-danger">Failed to update: ${error.message}</span>`;
+            }
+        } catch (error) {
+            configUpdateStatus.innerHTML = `<span class="text-danger">Error: ${error.message}</span>`;
+        }
+    }
+
     async function showAccounts() {
 
         const accountsTableBody = document.querySelector('#accounts-tbody');
