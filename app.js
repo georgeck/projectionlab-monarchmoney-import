@@ -1,8 +1,8 @@
 import express from 'express';
-import getMonarchAccounts from './get-monarch-accounts.js';
 
 import path from 'path';
 import {URL} from 'url';
+import {getMonarchAccounts} from "./common.js";
 
 const app = express();
 const port = process.env.PORT || 3000;

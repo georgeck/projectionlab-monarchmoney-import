@@ -25,7 +25,7 @@
     <h5>Monarch login</h5>
 </div>
 
-<form>
+<form id="monarchForm" onsubmit="event.preventDefault(); showAccounts();">
     <div class="mb-3">
         <label for="email" class="form-label">Email address</label>
         <input type="email" class="form-control" id="email" aria-describedby="Monarch login id"
@@ -35,7 +35,7 @@
         <label for="password" class="form-label">Password</label>
         <input type="password" class="form-control" id="password" placeholder="Monarch Password">
     </div>
-    <button type="submit" class="btn btn-primary" onclick="showAccounts()">Get Accounts</button>
+    <button type="submit" class="btn btn-primary">Get Accounts</button>
 </form>
 
 
