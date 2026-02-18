@@ -2,82 +2,57 @@ import {monarchCredentials} from './config.js'
 import {authenticator} from 'otplib';
 import {gql, GraphQLClient} from "graphql-request";
 
-async function login() {
-    let response = await fetch("https://api.monarch.com/auth/login/", {
-        "headers": {
+const MONARCH_GRAPHQL_ENDPOINT = 'https://api.monarch.com/graphql';
+
+async function login(creds) {
+    const c = creds || monarchCredentials;
+    const response = await fetch("https://api.monarch.com/auth/login/", {
+        headers: {
             "accept": "application/json",
-            "accept-language": "en-US,en;q=0.9",
             "client-platform": "web",
             "content-type": "application/json",
         },
-        "referrerPolicy": "no-referrer",
-        "body": JSON.stringify({
-            username: monarchCredentials.monarch_email,
-            password: monarchCredentials.monarch_password,
+        body: JSON.stringify({
+            username: c.monarch_email,
+            password: c.monarch_password,
             trusted_device: false,
-            supports_mfa: !!monarchCredentials.monarch_mfa,
-            totp: monarchCredentials.monarch_mfa ? authenticator.generate(monarchCredentials.monarch_mfa) : null
+            supports_mfa: !!c.monarch_mfa,
+            totp: c.monarch_mfa ? authenticator.generate(c.monarch_mfa) : null
         }),
-        "method": "POST",
-        "mode": "cors",
-        "credentials": "omit"
+        method: "POST",
     });
     if (response.ok) {
-        let data = await response.json();
+        const data = await response.json();
         return "Token " + data.token;
     } else {
         const data = await response.text();
-        const error = new Error(`Monarch login failed with server error: status=${response.status} ${response.statusText}. JSON=${JSON.stringify(data)}`);
-        console.error(error);
-        throw error;
+        throw new Error(`Monarch login failed: status=${response.status} ${response.statusText}. ${data}`);
     }
 }
 
-async function getMonarchAccounts() {
+async function getMonarchAccounts(creds) {
+    const c = creds || monarchCredentials;
+    const token = await login(c);
 
-    const endpoint = 'https://api.monarch.com/graphql';
-
-    let token = null;
-    try {
-        token = await login();
-    } catch (error) {
-        throw error;
-    }
-
-    // Create a GraphQLClient instance
-    const client = new GraphQLClient(endpoint, {
+    const client = new GraphQLClient(MONARCH_GRAPHQL_ENDPOINT, {
         headers: {
-            "accept": "*/*",
-            "accept-language": "en-US,en;q=0.9",
             "authorization": token,
             "client-platform": "web",
-            "content-type": "application/json",
-            "device-uuid": monarchCredentials.device_uuid
+            "device-uuid": c.device_uuid
         }
     });
 
-    // Define the GraphQL query using gql tag
     const query = gql`
         query GetAccounts {
             accounts {
-                ...AccountFields
+                id
+                displayName
             }
-        }
-
-        fragment AccountFields on Account {
-            id
-            displayName
         }
     `;
 
-    // Execute the query
-    try {
-        const data = await client.request(query);
-        return data.accounts;
-    } catch (error) {
-        console.error(error);
-        return null; // or handle the error as needed
-    }
+    const data = await client.request(query);
+    return data.accounts;
 }
 
 export {getMonarchAccounts, login};

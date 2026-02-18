@@ -42,6 +42,21 @@
             background-color: #198754;
             color: white;
         }
+
+        .snippet-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .form-select {
+            max-width: 400px;
+        }
     </style>
 </head>
 
@@ -59,249 +74,316 @@
     <div class="step-circle" id="step-3-indicator">3</div>
 </div>
 
-<!-- Step 1: ProjectionLab API Key -->
+<!-- Step 1: ProjectionLab Setup -->
 <div id="step-1" class="step active-step">
     <h3>Step 1: ProjectionLab Setup</h3>
-    <p>Enter your ProjectionLab API Key. You can find this in ProjectionLab under Account Settings > Plugins.</p>
+    <p>Enter your ProjectionLab API Key, then run the generated snippet in your
+        <a href="https://app.projectionlab.com" target="_blank">ProjectionLab</a> browser console to export your accounts.</p>
 
     <div class="mb-3">
-        <label for="projectionLabsApiKey" class="form-label">ProjectionLabs API Key</label>
-        <input type="text" class="form-control" id="projectionLabsApiKey" placeholder="ProjectionLabs API Key">
+        <label for="projectionLabsApiKey" class="form-label">ProjectionLab API Key</label>
+        <input type="text" class="form-control" id="projectionLabsApiKey"
+               placeholder="Enter your API key" oninput="updateSnippet()">
+        <div class="form-text">Account Settings &gt; Plugins &gt; Plugin API Key</div>
     </div>
 
+    <div class="mb-3">
+        <label class="form-label">Browser Console Snippet</label>
+        <p class="text-muted small">Copy this snippet, open ProjectionLab in your browser, open the
+            developer console (F12), paste it and press Enter. Your accounts will be copied to your clipboard.</p>
+        <div class="snippet-box" id="plSnippet"></div>
+        <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copySnippet()">Copy Snippet</button>
+    </div>
+
+    <div class="mb-3">
+        <label for="plAccountsJson" class="form-label">Paste Account Data</label>
+        <textarea class="form-control" id="plAccountsJson" rows="5"
+                  placeholder="Paste the JSON from your clipboard here..."></textarea>
+        <button class="btn btn-sm btn-primary mt-2" onclick="loadPlAccounts()">Load Accounts</button>
+    </div>
+
+    <div id="plAccountsResult" class="mt-2"></div>
+
     <div class="mt-4">
-        <button class="btn btn-primary" onclick="nextStep(1)">Next</button>
+        <button class="btn btn-primary" id="step1NextBtn" onclick="nextStep(1)" disabled>Next</button>
     </div>
 </div>
 
-<!-- Step 2: ProjectionLab Account Mapping -->
+<!-- Step 2: Monarch Setup -->
 <div id="step-2" class="step">
     <h3>Step 2: Monarch Credentials</h3>
-    <p>Enter your Monarch Money credentials to connect to your accounts.</p>
+    <p>Enter your Monarch Money credentials to fetch your accounts.</p>
 
     <div class="mb-3">
-        <label for="monarchEmail" class="form-label">Monarch Email</label>
-        <input type="email" class="form-control" id="monarchEmail" placeholder="Monarch Email">
+        <label for="monarchEmail" class="form-label">Email</label>
+        <input type="email" class="form-control" id="monarchEmail" placeholder="Monarch email">
     </div>
     <div class="mb-3">
-        <label for="monarchPassword" class="form-label">Monarch Password</label>
-        <input type="password" class="form-control" id="monarchPassword" placeholder="Monarch Password">
+        <label for="monarchPassword" class="form-label">Password</label>
+        <input type="password" class="form-control" id="monarchPassword" placeholder="Monarch password">
     </div>
     <div class="mb-3">
-        <label for="monarchMfa" class="form-label">Monarch MFA Code (optional)</label>
-        <input type="text" class="form-control" id="monarchMfa" placeholder="MFA Secret">
+        <label for="monarchMfa" class="form-label">MFA Secret (optional)</label>
+        <input type="text" class="form-control" id="monarchMfa"
+               placeholder="TOTP secret (the 30+ character code, not the 6-digit code)">
     </div>
     <div class="mb-3">
         <label for="deviceUuid" class="form-label">Device UUID</label>
         <input type="text" class="form-control" id="deviceUuid" placeholder="Device UUID">
-        <button class="btn btn-sm btn-secondary mt-2" onclick="generateUUID()">Generate UUID</button>
-    </div>
-
-    <div class="mt-4">
-        <button class="btn btn-secondary" onclick="prevStep(1)">Back</button>
-        <button class="btn btn-primary" onclick="fetchMonarchAccounts()">Get Monarch Accounts</button>
-    </div>
-
-    <div id="monarchAccountsList" class="mt-3">
-        <!-- Monarch accounts will be displayed here -->
-    </div>
-
-    <div class="mt-4" id="finalizeSection" style="display: none;">
-        <h4>Final Step: Create Configuration</h4>
-        <button class="btn btn-success" onclick="createConfiguration()">Create Configuration</button>
-        <div id="configResult" class="mt-2"></div>
-    </div>
-</div>
-
-<!-- Step 3: Monarch Credentials -->
-<div id="step-3" class="step">
-    <h3>Step 3: ProjectionLab Account Mapping</h3>
-    <p>Here are your ProjectionLab accounts. Map which ones you want to update with Monarch data.</p>
-
-    <div id="accountMappingSection" class="mb-3">
-        <table class="table" id="accountMappingTable">
-            <thead>
-            <tr>
-                <th>Account ID</th>
-                <th>Account Name</th>
-                <th>Include</th>
-            </tr>
-            </thead>
-            <tbody id="accountMappingBody">
-            <!-- Account mapping rows will be added here -->
-            </tbody>
-        </table>
+        <button class="btn btn-sm btn-outline-secondary mt-2" onclick="generateUUID()">Generate UUID</button>
     </div>
 
     <div class="mt-4">
         <button class="btn btn-secondary" onclick="prevStep(2)">Back</button>
-        <button class="btn btn-primary" onclick="nextStep(2)">Next</button>
+        <button class="btn btn-primary" id="fetchMonarchBtn" onclick="fetchMonarchAccounts()">Fetch Monarch Accounts</button>
+    </div>
+
+    <div id="monarchAccountsList" class="mt-3"></div>
+
+    <div class="mt-4">
+        <button class="btn btn-primary" id="step2NextBtn" onclick="nextStep(2)" disabled>Next</button>
     </div>
 </div>
 
+<!-- Step 3: Account Mapping -->
+<div id="step-3" class="step">
+    <h3>Step 3: Account Mapping</h3>
+    <p>Map each Monarch account to the corresponding ProjectionLab account. Select &ldquo;— Skip —&rdquo; for accounts you don&rsquo;t want to sync.</p>
+
+    <div id="mappingSection" class="mb-3">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Monarch Account</th>
+                <th>ProjectionLab Account</th>
+            </tr>
+            </thead>
+            <tbody id="mappingBody"></tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        <button class="btn btn-secondary" onclick="prevStep(3)">Back</button>
+        <button class="btn btn-success" onclick="saveConfiguration()">Save Configuration</button>
+    </div>
+
+    <div id="saveResult" class="mt-3"></div>
+</div>
+
 <script>
-    // Global variables to store data
-    let selectedAccounts = [];
+    // --------------- Global state ---------------
+    let plAccounts = [];
     let monarchAccounts = [];
+    let existingMapping = [];
 
-    // Navigation functions
-    function nextStep(currentStep) {
-        document.getElementById(`step-${currentStep}`).classList.remove('active-step');
-        document.getElementById(`step-${currentStep + 1}`).classList.add('active-step');
-
-        document.getElementById(`step-${currentStep}-indicator`).classList.add('completed');
-        document.getElementById(`step-${currentStep + 1}-indicator`).classList.add('active');
-    }
-
-    function prevStep(currentStep) {
-        document.getElementById(`step-${currentStep}`).classList.remove('active-step');
-        document.getElementById(`step-${currentStep - 1}`).classList.add('active-step');
-
-        document.getElementById(`step-${currentStep}-indicator`).classList.remove('active');
-        document.getElementById(`step-${currentStep - 1}-indicator`).classList.add('active');
-    }
-
-    // Initialize step indicators
-    window.addEventListener('DOMContentLoaded', () => {
+    // --------------- Init ---------------
+    window.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('step-1-indicator').classList.add('active');
-
-        // Try to load existing config
-        loadExistingConfig();
+        updateSnippet();
+        await loadExistingConfig();
     });
 
     async function loadExistingConfig() {
         try {
-            const config = await fetchConfig();
+            const response = await fetch('/api/get-config');
+            if (!response.ok) return;
+            const config = await response.json();
+
             document.getElementById('projectionLabsApiKey').value = config.projection_Labs_api_key || '';
-            document.getElementById('monarchEmail').value = config.monarchCredentials.monarch_email || '';
-            document.getElementById('monarchPassword').value = config.monarchCredentials.monarch_password || '';
-            document.getElementById('monarchMfa').value = config.monarchCredentials.monarch_mfa || '';
-            document.getElementById('deviceUuid').value = config.monarchCredentials.device_uuid || '';
+            document.getElementById('monarchEmail').value = config.monarchCredentials?.monarch_email || '';
+            document.getElementById('monarchPassword').value = config.monarchCredentials?.monarch_password || '';
+            document.getElementById('monarchMfa').value = config.monarchCredentials?.monarch_mfa || '';
+            document.getElementById('deviceUuid').value = config.monarchCredentials?.device_uuid || '';
+
+            if (config.accountMapping && config.accountMapping.length > 0) {
+                existingMapping = config.accountMapping;
+            }
+
+            updateSnippet();
         } catch (error) {
             console.error('Failed to load config:', error);
         }
     }
 
-    async function fetchConfig() {
-        const response = await fetch('/api/get-config');
-        if (response.ok) {
-            return await response.json();
-        } else {
-            throw new Error(`Failed to fetch config: ${response.status} ${response.statusText}`);
-        }
+    // --------------- Step 1: ProjectionLab Setup ---------------
+    function updateSnippet() {
+        const apiKey = document.getElementById('projectionLabsApiKey').value || 'YOUR_API_KEY';
+        document.getElementById('plSnippet').textContent =
+`(async () => {
+  const e = await window.projectionlabPluginAPI.exportData({ key: '${apiKey}' });
+  const a = [...e.today.savingsAccounts, ...e.today.investmentAccounts,
+             ...e.today.assets, ...e.today.debts];
+  const r = a.map(x => ({ id: x.id, name: x.name }));
+  copy(JSON.stringify(r));
+  console.log('Copied ' + r.length + ' accounts to clipboard!');
+})();`;
     }
 
+    function copySnippet() {
+        const text = document.getElementById('plSnippet').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('[onclick="copySnippet()"]');
+            const orig = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = orig, 1500);
+        });
+    }
 
-    async function fetchMonarchAccounts() {
-        const monarchEmail = document.getElementById('monarchEmail').value;
-        const monarchPassword = document.getElementById('monarchPassword').value;
-        const monarchMfa = document.getElementById('monarchMfa').value;
-        const deviceUuid = document.getElementById('deviceUuid').value;
+    function loadPlAccounts() {
+        const json = document.getElementById('plAccountsJson').value.trim();
+        const resultDiv = document.getElementById('plAccountsResult');
 
-        if (!monarchEmail || !monarchPassword || !deviceUuid) {
-            alert('Please fill in all required Monarch credentials');
+        if (!json) {
+            resultDiv.innerHTML = '<div class="alert alert-warning">Please paste the JSON data first.</div>';
             return;
         }
 
-        const monarchAccountsList = document.getElementById('monarchAccountsList');
-        monarchAccountsList.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+        try {
+            const accounts = JSON.parse(json);
+
+            if (!Array.isArray(accounts) || accounts.length === 0) {
+                resultDiv.innerHTML = '<div class="alert alert-danger">Invalid data: expected a non-empty array of accounts.</div>';
+                return;
+            }
+            if (!accounts[0].id || !accounts[0].name) {
+                resultDiv.innerHTML = '<div class="alert alert-danger">Invalid data: each account must have "id" and "name" fields.</div>';
+                return;
+            }
+
+            plAccounts = accounts;
+            resultDiv.innerHTML = `<div class="alert alert-success">Loaded ${accounts.length} ProjectionLab accounts.</div>`;
+            document.getElementById('step1NextBtn').disabled = false;
+        } catch (e) {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Invalid JSON: ${e.message}</div>`;
+        }
+    }
+
+    // --------------- Step 2: Monarch Setup ---------------
+    function generateUUID() {
+        document.getElementById('deviceUuid').value = crypto.randomUUID();
+    }
+
+    async function fetchMonarchAccounts() {
+        const email = document.getElementById('monarchEmail').value;
+        const password = document.getElementById('monarchPassword').value;
+        const mfa = document.getElementById('monarchMfa').value;
+        const deviceUuid = document.getElementById('deviceUuid').value;
+
+        if (!email || !password || !deviceUuid) {
+            alert('Please fill in email, password, and device UUID.');
+            return;
+        }
+
+        const listDiv = document.getElementById('monarchAccountsList');
+        const fetchBtn = document.getElementById('fetchMonarchBtn');
+        listDiv.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+        fetchBtn.disabled = true;
 
         try {
             const response = await fetch('/api/get-monarch-accounts', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     monarchCredentials: {
-                        monarch_email: monarchEmail,
-                        monarch_password: monarchPassword,
-                        monarch_mfa: monarchMfa,
+                        monarch_email: email,
+                        monarch_password: password,
+                        monarch_mfa: mfa,
                         device_uuid: deviceUuid
                     }
                 })
             });
 
-            if (response.ok) {
-                const accounts = await response.json();
-                monarchAccounts = accounts;
-                displayMonarchAccounts(accounts);
-                document.getElementById('finalizeSection').style.display = 'block';
-            } else {
+            if (!response.ok) {
                 const error = await response.json();
-                monarchAccountsList.innerHTML = `<div class="alert alert-danger">Error: ${error.errorDetail || 'Failed to fetch accounts'}</div>`;
+                listDiv.innerHTML = `<div class="alert alert-danger">Error: ${error.errorDetail || 'Failed to fetch accounts'}</div>`;
+                return;
             }
+
+            const accounts = await response.json();
+            monarchAccounts = accounts;
+
+            let html = `<div class="alert alert-success">Found ${accounts.length} Monarch accounts.</div>`;
+            html += '<table class="table table-sm"><thead><tr><th>ID</th><th>Name</th></tr></thead><tbody>';
+            accounts.forEach(a => {
+                html += `<tr><td><code>${a.id}</code></td><td>${a.displayName}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            listDiv.innerHTML = html;
+
+            document.getElementById('step2NextBtn').disabled = false;
         } catch (error) {
-            monarchAccountsList.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            listDiv.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        } finally {
+            fetchBtn.disabled = false;
         }
     }
 
-    function displayMonarchAccounts(accounts) {
-        const monarchAccountsList = document.getElementById('monarchAccountsList');
+    // --------------- Step 3: Account Mapping ---------------
+    function renderMappingTable() {
+        const tbody = document.getElementById('mappingBody');
+        tbody.innerHTML = '';
 
-        if (accounts.length === 0) {
-            monarchAccountsList.innerHTML = '<div class="alert alert-warning">No accounts found</div>';
-            return;
-        }
+        monarchAccounts.forEach(mAccount => {
+            const row = document.createElement('tr');
 
-        let html = `
-            <div class="alert alert-success">Found ${accounts.length} accounts</div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Account ID</th>
-                        <th>Account Name</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+            const nameCell = document.createElement('td');
+            nameCell.textContent = mAccount.displayName;
+            row.appendChild(nameCell);
 
-        accounts.forEach(account => {
-            html += `
-                <tr>
-                    <td>${account.id}</td>
-                    <td>${account.displayName}</td>
-                </tr>
-            `;
+            const selectCell = document.createElement('td');
+            const select = document.createElement('select');
+            select.className = 'form-select';
+            select.dataset.monarchId = mAccount.id;
+            select.dataset.monarchName = mAccount.displayName;
+
+            // Skip option
+            const skipOpt = document.createElement('option');
+            skipOpt.value = '';
+            skipOpt.textContent = '— Skip —';
+            select.appendChild(skipOpt);
+
+            // PL account options
+            plAccounts.forEach(plAccount => {
+                const opt = document.createElement('option');
+                opt.value = plAccount.id;
+                opt.textContent = plAccount.name;
+
+                // Pre-select from existing mapping
+                const existing = existingMapping.find(m => m.monarchAccountID === mAccount.id);
+                if (existing && existing.plAccountID === plAccount.id) {
+                    opt.selected = true;
+                }
+
+                select.appendChild(opt);
+            });
+
+            selectCell.appendChild(select);
+            row.appendChild(selectCell);
+            tbody.appendChild(row);
         });
-
-        html += '</tbody></table>';
-        monarchAccountsList.innerHTML = html;
     }
 
-    async function createConfiguration() {
-        // Get selected accounts from step 2
-        const checkboxes = document.querySelectorAll('.account-checkbox:checked');
-        selectedAccounts = Array.from(checkboxes).map(checkbox => ({
-            id: checkbox.getAttribute('data-id'),
-            name: checkbox.getAttribute('data-name')
-        }));
-
-        if (selectedAccounts.length === 0) {
-            alert('Please select at least one account to map');
-            return;
-        }
-
-        if (monarchAccounts.length === 0) {
-            alert('Please fetch Monarch accounts first');
-            return;
-        }
-
-        // Create account mapping
+    async function saveConfiguration() {
+        const selects = document.querySelectorAll('#mappingBody select');
         const accountMapping = [];
-        selectedAccounts.forEach(plAccount => {
-            // Find a matching Monarch account by name (simplified matching)
-            const matchingMonarchAccount = findMatchingMonarchAccount(plAccount.name);
-            if (matchingMonarchAccount) {
+
+        selects.forEach(select => {
+            if (select.value) {
+                const plAccount = plAccounts.find(a => a.id === select.value);
                 accountMapping.push({
-                    plAccountID: plAccount.id,
-                    monarchAccountID: matchingMonarchAccount.id,
-                    plDisplayName: plAccount.name
+                    plAccountID: select.value,
+                    monarchAccountID: select.dataset.monarchId,
+                    plDisplayName: plAccount ? plAccount.name : ''
                 });
             }
         });
 
-        // Create configuration object
+        if (accountMapping.length === 0) {
+            document.getElementById('saveResult').innerHTML =
+                '<div class="alert alert-warning">Please map at least one account.</div>';
+            return;
+        }
+
         const configData = {
             projection_Labs_api_key: document.getElementById('projectionLabsApiKey').value,
             monarchCredentials: {
@@ -316,43 +398,62 @@
         try {
             const response = await fetch('/api/save-complete-config', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(configData)
             });
 
             if (response.ok) {
-                const result = await response.json();
-                document.getElementById('configResult').innerHTML = `
+                existingMapping = accountMapping;
+                document.getElementById('saveResult').innerHTML = `
                     <div class="alert alert-success">
-                        <p>Configuration saved successfully!</p>
-                        <p>Created mapping for ${accountMapping.length} accounts.</p>
-                        <p>To update your ProjectionLab accounts, run: <code>node index.js</code></p>
-                    </div>
-                `;
+                        <p><strong>Configuration saved!</strong></p>
+                        <p>Mapped ${accountMapping.length} accounts.</p>
+                        <p>To sync balances, run: <code>node index.js</code></p>
+                        <p>Then paste the output into ProjectionLab's browser console.</p>
+                    </div>`;
             } else {
                 const error = await response.json();
-                document.getElementById('configResult').innerHTML = `
-                    <div class="alert alert-danger">Error: ${error.message}</div>
-                `;
+                document.getElementById('saveResult').innerHTML =
+                    `<div class="alert alert-danger">Error: ${error.message}</div>`;
             }
         } catch (error) {
-            document.getElementById('configResult').innerHTML = `
-                <div class="alert alert-danger">Error: ${error.message}</div>
-            `;
+            document.getElementById('saveResult').innerHTML =
+                `<div class="alert alert-danger">Error: ${error.message}</div>`;
         }
     }
 
-    function findMatchingMonarchAccount(plAccountName) {
-        // This is a simple matching function - you might need to make it more sophisticated
-        const normalizedPlName = plAccountName.toLowerCase().replace(/\s+/g, '');
+    // --------------- Navigation ---------------
+    function nextStep(current) {
+        if (current === 1) {
+            const apiKey = document.getElementById('projectionLabsApiKey').value;
+            if (!apiKey || plAccounts.length === 0) {
+                alert('Please enter your API key and load your ProjectionLab accounts first.');
+                return;
+            }
+        }
+        if (current === 2 && monarchAccounts.length === 0) {
+            alert('Please fetch your Monarch accounts first.');
+            return;
+        }
 
-        return monarchAccounts.find(monarchAccount => {
-            const normalizedMonarchName = monarchAccount.displayName.toLowerCase().replace(/\s+/g, '');
-            return normalizedMonarchName.includes(normalizedPlName) ||
-                normalizedPlName.includes(normalizedMonarchName);
-        });
+        document.getElementById(`step-${current}`).classList.remove('active-step');
+        document.getElementById(`step-${current + 1}`).classList.add('active-step');
+        document.getElementById(`step-${current}-indicator`).classList.remove('active');
+        document.getElementById(`step-${current}-indicator`).classList.add('completed');
+        document.getElementById(`step-${current + 1}-indicator`).classList.add('active');
+
+        // Render mapping table when entering step 3
+        if (current + 1 === 3) {
+            renderMappingTable();
+        }
+    }
+
+    function prevStep(current) {
+        document.getElementById(`step-${current}`).classList.remove('active-step');
+        document.getElementById(`step-${current - 1}`).classList.add('active-step');
+        document.getElementById(`step-${current}-indicator`).classList.remove('active');
+        document.getElementById(`step-${current - 1}-indicator`).classList.remove('completed');
+        document.getElementById(`step-${current - 1}-indicator`).classList.add('active');
     }
 </script>
 <script src="/javascripts/bootstrap.bundle.min.js"></script>
