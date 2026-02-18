@@ -41,7 +41,7 @@ async function main() {
         "method": "POST"
     };
 
-    await fetchAndProcessData("https://api.monarchmoney.com/graphql", options, accountMapping);
+    await fetchAndProcessData("https://api.monarch.com/graphql", options, accountMapping);
     createUpdateFunction(accountMapping);
 }
 

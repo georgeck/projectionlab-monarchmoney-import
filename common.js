@@ -3,7 +3,7 @@ import {authenticator} from 'otplib';
 import {gql, GraphQLClient} from "graphql-request";
 
 async function login() {
-    let response = await fetch("https://api.monarchmoney.com/auth/login/", {
+    let response = await fetch("https://api.monarch.com/auth/login/", {
         "headers": {
             "accept": "application/json",
             "accept-language": "en-US,en;q=0.9",
@@ -26,7 +26,7 @@ async function login() {
         let data = await response.json();
         return "Token " + data.token;
     } else {
-        const data = await response.json();
+        const data = await response.text();
         const error = new Error(`Monarch login failed with server error: status=${response.status} ${response.statusText}. JSON=${JSON.stringify(data)}`);
         console.error(error);
         throw error;
@@ -35,7 +35,7 @@ async function login() {
 
 async function getMonarchAccounts() {
 
-    const endpoint = 'https://api.monarchmoney.com/graphql';
+    const endpoint = 'https://api.monarch.com/graphql';
 
     let token = null;
     try {
