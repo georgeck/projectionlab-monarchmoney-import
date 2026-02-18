@@ -57,7 +57,9 @@ Once configured, sync your balances anytime by running:
 ```bash
 npm run get-latest
 ```
-This prints a set of JavaScript commands. Copy the output, open ProjectionLab's browser developer console, paste it and press Enter. Your account balances will be updated.
+This prints a set of JavaScript commands. Copy the output, open ProjectionLab's browser developer console (F12), paste it and press Enter. Your account balances will be updated.
+
+![Browser Developer Console](images/developer-console.png)
 
 ---
 
@@ -111,7 +113,9 @@ let accountMapping = [
 ```bash
 npm run get-latest
 ```
-Copy the output, paste it into ProjectionLab's browser developer console and press Enter. Each time you want to update balances, just repeat this step.
+Copy the output, paste it into ProjectionLab's browser developer console (F12) and press Enter. Each time you want to update balances, just repeat this step.
+
+![Browser Developer Console](images/developer-console.png)
 
 ---
 
