@@ -1,12 +1,24 @@
 import {projection_Labs_api_key, accountMapping, monarchCredentials} from './config.js'
 import {login} from './common.js';
+import {gql, GraphQLClient} from 'graphql-request';
 
-async function fetchAndProcessData(url, options, accountMapping) {
-    const response = await fetch(url, options);
-    const data = await response.json();
-    const accountTypeSummaries = data.data.accountTypeSummaries;
+const MONARCH_GRAPHQL_ENDPOINT = 'https://api.monarch.com/graphql';
 
-    for (const accountTypeSummary of accountTypeSummaries) {
+const query = gql`
+    query GetAccountBalances {
+        accountTypeSummaries {
+            accounts {
+                id
+                displayBalance
+            }
+        }
+    }
+`;
+
+async function fetchAndProcessData(client, accountMapping) {
+    const data = await client.request(query);
+
+    for (const accountTypeSummary of data.accountTypeSummaries) {
         for (const account of accountTypeSummary.accounts) {
             const mappedAccount = accountMapping.find(accountMap => accountMap.monarchAccountID === account.id);
             if (mappedAccount) {
@@ -27,21 +39,15 @@ function createUpdateFunction(accountMapping) {
 async function main() {
     const token = await login();
 
-    const options = {
-        "headers": {
-            "accept": "*/*",
-            "accept-language": "en-US,en;q=0.9",
+    const client = new GraphQLClient(MONARCH_GRAPHQL_ENDPOINT, {
+        headers: {
             "authorization": token,
             "client-platform": "web",
-            "content-type": "application/json",
             "device-uuid": monarchCredentials.device_uuid
-        },
-        "referrerPolicy": "no-referrer",
-        "body": "{\"operationName\":\"Web_GetAccountsPage\",\"variables\":{},\"query\":\"query Web_GetAccountsPage {\\n  hasAccounts\\n  accountTypeSummaries {\\n    type {\\n      name\\n      display\\n      group\\n      __typename\\n    }\\n    accounts {\\n      id\\n      ...AccountsListFields\\n      __typename\\n    }\\n    totalDisplayBalance\\n    __typename\\n  }\\n  householdPreferences {\\n    id\\n    accountGroupOrder\\n    __typename\\n  }\\n}\\n\\nfragment AccountsListFields on Account {\\n  id\\n  syncDisabled\\n  isHidden\\n  isAsset\\n  includeInNetWorth\\n  order\\n  type {\\n    name\\n    display\\n    __typename\\n  }\\n  ...AccountListItemFields\\n  __typename\\n}\\n\\nfragment AccountListItemFields on Account {\\n  id\\n  displayName\\n  displayBalance\\n  signedBalance\\n  updatedAt\\n  syncDisabled\\n  icon\\n  isHidden\\n  isAsset\\n  includeInNetWorth\\n  includeBalanceInNetWorth\\n  displayLastUpdatedAt\\n  ...AccountMaskFields\\n  credential {\\n    id\\n    updateRequired\\n    dataProvider\\n    disconnectedFromDataProviderAt\\n    __typename\\n  }\\n  institution {\\n    id\\n    ...InstitutionStatusTooltipFields\\n    __typename\\n  }\\n  __typename\\n}\\n\\nfragment AccountMaskFields on Account {\\n  id\\n  mask\\n  subtype {\\n    display\\n    __typename\\n  }\\n  __typename\\n}\\n\\nfragment InstitutionStatusTooltipFields on Institution {\\n  id\\n  logo\\n  name\\n  status\\n  plaidStatus\\n  hasIssuesReported\\n  url\\n  hasIssuesReportedMessage\\n  transactionsStatus\\n  balanceStatus\\n  __typename\\n}\"}",
-        "method": "POST"
-    };
+        }
+    });
 
-    await fetchAndProcessData("https://api.monarch.com/graphql", options, accountMapping);
+    await fetchAndProcessData(client, accountMapping);
     createUpdateFunction(accountMapping);
 }
 
