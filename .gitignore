@@ -130,3 +130,5 @@ dist
 .pnp.*
 
 .idea
+config.js
+config.js.backup
