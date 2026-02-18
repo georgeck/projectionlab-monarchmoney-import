@@ -1,5 +1,5 @@
 ## Import your Monarch Money account data into ProjectionLab
-Updates your [ProjectionLab](https://projectionlab.com/) account balances with the latest data from [Monarch Money](https://monarchmoney.com).
+Updates your [ProjectionLab](https://projectionlab.com/) account balances with the latest data from [Monarch Money](https://monarch.com).
 
 ### How it Works
 1. **Connects to APIs**: Scripts communicate with both Monarch Money and ProjectionLab's Plugin API.
