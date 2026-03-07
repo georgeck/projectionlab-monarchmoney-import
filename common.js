@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import {monarchCredentials} from './config.js'
 import {generate} from 'otplib';
 import {gql, GraphQLClient} from "graphql-request";
@@ -5,18 +6,17 @@ import {gql, GraphQLClient} from "graphql-request";
 const MONARCH_API_BASE_URL = 'https://api.monarch.com';
 const MONARCH_GRAPHQL_ENDPOINT = `${MONARCH_API_BASE_URL}/graphql`;
 const MONARCH_LOGIN_ENDPOINT = `${MONARCH_API_BASE_URL}/auth/login/`;
-const MONARCH_USER_AGENT = 'ProjectionLabMonarchImport/1.0 (+https://github.com/georgeck/projectionlab-monarchmoney-import)';
 
 function buildMonarchHeaders(creds, includeAuth = false, token = null) {
     const headers = {
         "accept": "application/json",
         "client-platform": "web",
-        "content-type": "application/json"
+        "content-type": "application/json",
+        "Origin": "https://app.monarchmoney.com",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
     };
 
-    if (creds?.device_uuid) {
-        headers["device-uuid"] = creds.device_uuid;
-    }
+    headers["device-uuid"] = creds?.device_uuid || crypto.randomUUID();
 
     if (includeAuth && token) {
         headers.authorization = token;
@@ -43,8 +43,10 @@ async function login(creds) {
             username: c.monarch_email,
             password: c.monarch_password,
             device_uuid: c.device_uuid || null,
-            trusted_device: false,
+            trusted_device: true,
             supports_mfa: true,
+            supports_email_otp: true,
+            supports_recaptcha: true,
             totp
         }),
         method: "POST",
