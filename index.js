@@ -1,8 +1,6 @@
 import {projection_Labs_api_key, accountMapping, monarchCredentials} from './config.js'
-import {login} from './common.js';
-import {gql, GraphQLClient} from 'graphql-request';
-
-const MONARCH_GRAPHQL_ENDPOINT = 'https://api.monarch.com/graphql';
+import {createMonarchClient, login} from './common.js';
+import {gql} from 'graphql-request';
 
 const query = gql`
     query GetAccountBalances {
@@ -38,14 +36,7 @@ function createUpdateFunction(accountMapping) {
 
 async function main() {
     const token = await login();
-
-    const client = new GraphQLClient(MONARCH_GRAPHQL_ENDPOINT, {
-        headers: {
-            "authorization": token,
-            "client-platform": "web",
-            "device-uuid": monarchCredentials.device_uuid
-        }
-    });
+    const client = createMonarchClient(monarchCredentials, token);
 
     await fetchAndProcessData(client, accountMapping);
     createUpdateFunction(accountMapping);

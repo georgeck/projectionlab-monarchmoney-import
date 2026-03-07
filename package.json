@@ -1,8 +1,8 @@
 {
   "name": "monarch-data",
   "type": "module",
-  "version": "1.0.0",
-  "description": "pull data from monarch",
+  "version": "1.0.1",
+  "description": "Sync Monarch Money account balances into ProjectionLab",
   "main": "index.js",
   "scripts": {
     "get-latest": "node index.js",
@@ -15,6 +15,6 @@
     "bootstrap": "^5.3.3",
     "express": "^4.21.2",
     "graphql-request": "^7.1.2",
-    "otplib": "^12.0.1"
+    "otplib": "^13.3.0"
   }
 }
