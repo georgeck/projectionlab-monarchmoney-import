@@ -90,4 +90,39 @@ async function getMonarchAccounts(creds) {
     return data.accounts;
 }
 
-export {createMonarchClient, getMonarchAccounts, login};
+async function generateSyncCommands(apiKey, creds, accountMapping) {
+    const c = creds || monarchCredentials;
+    const token = await login(c);
+    const client = createMonarchClient(c, token);
+
+    const query = gql`
+        query GetAccountBalances {
+            accountTypeSummaries {
+                accounts {
+                    id
+                    displayBalance
+                }
+            }
+        }
+    `;
+
+    const data = await client.request(query);
+
+    // Match Monarch balances to mapped accounts
+    const mappingWithBalances = accountMapping.map(m => ({...m, balance: null}));
+    for (const summary of data.accountTypeSummaries) {
+        for (const account of summary.accounts) {
+            const mapped = mappingWithBalances.find(m => m.monarchAccountID === account.id);
+            if (mapped) {
+                mapped.balance = account.displayBalance;
+            }
+        }
+    }
+
+    // Generate updateAccount commands
+    return mappingWithBalances
+        .filter(m => m.balance !== null)
+        .map(m => `await window.projectionlabPluginAPI.updateAccount('${m.plAccountID}', { balance: ${m.balance} }, { key: '${apiKey}' });`);
+}
+
+export {createMonarchClient, generateSyncCommands, getMonarchAccounts, login};

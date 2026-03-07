@@ -72,6 +72,7 @@
     <div class="step-circle" id="step-1-indicator">1</div>
     <div class="step-circle" id="step-2-indicator">2</div>
     <div class="step-circle" id="step-3-indicator">3</div>
+    <div class="step-circle" id="step-4-indicator">4</div>
 </div>
 
 <!-- Step 1: ProjectionLab Setup -->
@@ -168,6 +169,39 @@
     </div>
 
     <div id="saveResult" class="mt-3"></div>
+
+    <div class="mt-4">
+        <button class="btn btn-primary" id="step3NextBtn" onclick="nextStep(3)">Next: Sync Balances</button>
+    </div>
+</div>
+
+<!-- Step 4: Sync Balances -->
+<div id="step-4" class="step">
+    <h3>Step 4: Sync Balances</h3>
+    <p>Fetch the latest balances from Monarch Money and generate the commands to update ProjectionLab.</p>
+
+    <div class="mt-3">
+        <button class="btn btn-primary btn-lg" id="syncBtn" onclick="syncBalances()">
+            Sync Now
+        </button>
+    </div>
+
+    <div id="syncResult" class="mt-3"></div>
+
+    <div id="syncOutputSection" class="mt-3" style="display: none;">
+        <label class="form-label"><strong>Paste this into ProjectionLab's browser console</strong></label>
+        <p class="text-muted small">Open <a href="https://app.projectionlab.com" target="_blank">ProjectionLab</a>,
+            press <strong>F12</strong> (or <strong>Cmd+Option+J</strong> on Mac / <strong>Ctrl+Shift+J</strong> on Windows),
+            paste the commands below, and press Enter.</p>
+        <textarea class="form-control" id="syncOutput" rows="8" readonly
+                  style="font-family: monospace; font-size: 0.85rem; max-width: 100%;"></textarea>
+        <button class="btn btn-success mt-2" onclick="copySyncOutput()">Copy to Clipboard</button>
+        <span id="syncCopyConfirm" class="text-success ms-2" style="display: none;">Copied!</span>
+    </div>
+
+    <div class="mt-4">
+        <button class="btn btn-outline-secondary btn-sm" onclick="goToStep(1)">Reconfigure Setup</button>
+    </div>
 </div>
 
 <script>
@@ -200,6 +234,15 @@
             }
 
             updateSnippet();
+
+            // If config is complete, jump directly to Sync step
+            const hasApiKey = !!config.projection_Labs_api_key;
+            const hasCreds = !!(config.monarchCredentials?.monarch_email && config.monarchCredentials?.monarch_password);
+            const hasMapping = existingMapping.length > 0;
+
+            if (hasApiKey && hasCreds && hasMapping) {
+                goToStep(4);
+            }
         } catch (error) {
             console.error('Failed to load config:', error);
         }
@@ -404,12 +447,12 @@
 
             if (response.ok) {
                 existingMapping = accountMapping;
+                document.getElementById('step3NextBtn').style.display = '';
                 document.getElementById('saveResult').innerHTML = `
                     <div class="alert alert-success">
                         <p><strong>Configuration saved!</strong></p>
                         <p>Mapped ${accountMapping.length} accounts.</p>
-                        <p>To sync balances, run: <code>node index.js</code></p>
-                        <p>Then paste the output into ProjectionLab's browser console.</p>
+                        <p>Click <strong>Next: Sync Balances</strong> to fetch your latest balances.</p>
                     </div>`;
             } else {
                 const error = await response.json();
@@ -422,7 +465,72 @@
         }
     }
 
+    // --------------- Step 4: Sync Balances ---------------
+    async function syncBalances() {
+        const syncBtn = document.getElementById('syncBtn');
+        const resultDiv = document.getElementById('syncResult');
+        const outputSection = document.getElementById('syncOutputSection');
+
+        syncBtn.disabled = true;
+        syncBtn.textContent = 'Syncing...';
+        resultDiv.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+        outputSection.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/sync', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${error.errorDetail || 'Sync failed'}</div>`;
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.commands.length === 0) {
+                resultDiv.innerHTML = '<div class="alert alert-warning">No accounts with balances found. Check your account mapping.</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = `<div class="alert alert-success">Fetched balances for ${data.commands.length} account(s). Copy the commands below and paste into ProjectionLab's console.</div>`;
+
+            document.getElementById('syncOutput').value = data.commands.join('\n');
+            outputSection.style.display = 'block';
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        } finally {
+            syncBtn.disabled = false;
+            syncBtn.textContent = 'Sync Now';
+        }
+    }
+
+    function copySyncOutput() {
+        const text = document.getElementById('syncOutput').value;
+        navigator.clipboard.writeText(text).then(() => {
+            const confirm = document.getElementById('syncCopyConfirm');
+            confirm.style.display = 'inline';
+            setTimeout(() => confirm.style.display = 'none', 2000);
+        });
+    }
+
     // --------------- Navigation ---------------
+    function goToStep(target) {
+        // Hide all steps, show target
+        for (let i = 1; i <= 4; i++) {
+            document.getElementById(`step-${i}`).classList.remove('active-step');
+            document.getElementById(`step-${i}-indicator`).classList.remove('active', 'completed');
+        }
+        // Mark earlier steps as completed
+        for (let i = 1; i < target; i++) {
+            document.getElementById(`step-${i}-indicator`).classList.add('completed');
+        }
+        document.getElementById(`step-${target}`).classList.add('active-step');
+        document.getElementById(`step-${target}-indicator`).classList.add('active');
+    }
+
     function nextStep(current) {
         if (current === 1) {
             const apiKey = document.getElementById('projectionLabsApiKey').value;

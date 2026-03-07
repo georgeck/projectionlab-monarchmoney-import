@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import {URL} from 'url';
-import {getMonarchAccounts} from "./common.js";
+import {generateSyncCommands, getMonarchAccounts} from "./common.js";
 import fs from 'fs/promises';
 
 const app = express();
@@ -147,6 +147,48 @@ app.post('/api/save-complete-config', async (req, res) => {
     } catch (error) {
         console.error('Error saving configuration:', error);
         res.status(500).json({message: 'Failed to save configuration: ' + error.message});
+    }
+});
+
+app.post('/api/sync', async (req, res) => {
+    try {
+        const configPath = new URL('config.js', import.meta.url).pathname;
+        const configContent = await fs.readFile(configPath, 'utf8');
+
+        const apiKeyMatch = configContent.match(/const projection_Labs_api_key = "(.*?)"/);
+        const emailMatch = configContent.match(/monarch_email: "(.*?)"/);
+        const passwordMatch = configContent.match(/monarch_password: "(.*?)"/);
+        const mfaMatch = configContent.match(/monarch_mfa: "(.*?)"/);
+        const deviceUuidMatch = configContent.match(/device_uuid: "(.*?)"/);
+
+        const apiKey = apiKeyMatch ? apiKeyMatch[1] : '';
+        const creds = {
+            monarch_email: emailMatch ? emailMatch[1] : '',
+            monarch_password: passwordMatch ? passwordMatch[1] : '',
+            monarch_mfa: mfaMatch ? mfaMatch[1] : '',
+            device_uuid: deviceUuidMatch ? deviceUuidMatch[1] : ''
+        };
+
+        const accountMapping = [];
+        const mappingRegex = /plAccountID:\s*"(.*?)"[\s\S]*?monarchAccountID:\s*"(.*?)"[\s\S]*?plDisplayName:\s*"(.*?)"/g;
+        let match;
+        while ((match = mappingRegex.exec(configContent)) !== null) {
+            accountMapping.push({
+                plAccountID: match[1],
+                monarchAccountID: match[2],
+                plDisplayName: match[3]
+            });
+        }
+
+        if (!apiKey || accountMapping.length === 0) {
+            return res.status(400).json({errorDetail: 'Configuration is incomplete. Please complete setup first.'});
+        }
+
+        const commands = await generateSyncCommands(apiKey, creds, accountMapping);
+        res.json({commands});
+    } catch (error) {
+        console.error('Sync error:', error);
+        res.status(400).json({errorDetail: error.message});
     }
 });
 

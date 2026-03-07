@@ -85,22 +85,29 @@ If login fails without MFA configured, enable MFA in Monarch and try again using
 
 ## Syncing Balances (Daily Usage)
 
-Once configured, sync your balances anytime by running:
+Once configured, sync your balances anytime.
+
+#### Option 1: Web UI (easiest)
+
+1. Start the web UI if it isn't already running: `npm start`
+2. Open http://localhost:3000 — if setup is already complete, it will skip straight to **Step 4: Sync Balances**.
+3. Click **Sync Now** — the app fetches your latest Monarch balances automatically.
+4. Click **Copy to Clipboard**.
+5. Open [ProjectionLab](https://app.projectionlab.com), press **F12** (or **Cmd+Option+J** on Mac / **Ctrl+Shift+J** on Windows), paste, and press Enter.
+
+> If you need to change your credentials or account mapping, click **Reconfigure Setup** at the bottom of Step 4.
+
+#### Option 2: Terminal
+
 ```bash
 npm run get-latest
 ```
 
-This prints a set of JavaScript commands. To apply them:
-
-1. Open [ProjectionLab](https://app.projectionlab.com) in your browser.
-2. Open the developer console: press **F12** (or **Cmd+Option+J** on Mac / **Ctrl+Shift+J** on Windows).
-3. Copy the output from your terminal, paste it into the console, and press Enter.
-4. Your account balances will be updated.
-
+Copy the output, open ProjectionLab's developer console, paste it, and press Enter.
 
 ![Browser Developer Console](images/developer-console.png)
 
-Each time you want to update balances, just repeat this step.
+Each time you want to update balances, just repeat either option above.
 
 ---
 
