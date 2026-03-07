@@ -84,13 +84,13 @@
         <label for="projectionLabsApiKey" class="form-label">ProjectionLab API Key</label>
         <input type="text" class="form-control" id="projectionLabsApiKey"
                placeholder="Enter your API key" oninput="updateSnippet()">
-        <div class="form-text">Account Settings &gt; Plugins &gt; Plugin API Key</div>
+        <div class="form-text"><a href="https://app.projectionlab.com/settings">Settings</a> &gt; Plugins &gt; Plugin API Key</div>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Browser Console Snippet</label>
         <p class="text-muted small">Copy this snippet, open ProjectionLab in your browser, open the
-            developer console (F12), paste it and press Enter. Your accounts will be copied to your clipboard.</p>
+            developer console (F12 or Cmd+Option+J on Mac / Ctrl+Shift+J on Windows), paste it and press Enter.<br/>Your accounts will be copied to your clipboard.</p>
         <div class="snippet-box" id="plSnippet"></div>
         <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copySnippet()">Copy Snippet</button>
     </div>
@@ -123,7 +123,7 @@
         <input type="password" class="form-control" id="monarchPassword" placeholder="Monarch password">
     </div>
     <div class="mb-3">
-        <label for="monarchMfa" class="form-label">MFA Secret (optional)</label>
+        <label for="monarchMfa" class="form-label">MFA Secret (Recommended)</label>
         <input type="text" class="form-control" id="monarchMfa"
                placeholder="TOTP secret (the 30+ character code, not the 6-digit code)">
     </div>
